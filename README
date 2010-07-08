@@ -1,0 +1,15 @@
+[mgrad@pc-techinf-26 tinytools]$ cat latex-table.dat 
+a b c d 
+- - - -
+1 2 3 4
+5 6 7 8
+
+[mgrad@pc-techinf-26 tinytools]$ ./latex-table.sh latex-table.dat 
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+a  &  b  &  c  &  d  \\  \hline  \hline
+1  &  2  &  3  &  4  \\  \hline
+5  &  6  &  7  &  8  \\  \hline
+\hline
+\end{tabular}
+

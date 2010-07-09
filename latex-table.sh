@@ -3,15 +3,28 @@
 if [ $# -eq 0 ]; then
     echo "usage: $0 file"
     echo "example: $0 latex-table.dat"
+    echo "cat latex-table.dat | ./$0 -"
     exit 1
 fi
 
-INPUTFILE=$1
+# buffer input
+idx=0
+while read line; do
+    BUFFER[$idx]="$line\n"
+    echo $idx ${BUFFER[$idx]}
+    idx=$(($idx+1))
+done < <(cat $1 | egrep -v '^-|=|#')
 
-HEADER=$(awk 'BEGIN{i=0} NR==1{do {printf "|c"} while(i++<NF)}' $INPUTFILE)\|
-echo "\begin{tabular}{$HEADER}"
-echo "\hline"
-egrep -v '^(-|=|#)' $INPUTFILE  | awk '\
+HEADER=$(echo ${BUFFER[0]} | awk 'BEGIN{i=0} NR==1{do {printf "|c"} while(i++<NF)}')\|
+cat<<EOF
+\begin{table*}
+\centering
+\small
+\begin{tabular}{$HEADER}
+\hline
+EOF
+
+echo -e ${BUFFER[@]} | awk '\
     {
         for(i=1;i<=NF;i++) {
             printf $i 
@@ -21,7 +34,11 @@ egrep -v '^(-|=|#)' $INPUTFILE  | awk '\
                 printf  " \\\\ \\hline "
         }
         printf "\n"
-    } ' | sed '1s/$/\\hline/' | column -t
+    } ' | sed '1s/$/\\hline/' |  sed 's/_/\\_/g' | column -t | awk '{print "   "$0}'
 
-echo "\hline"
-echo "\end{tabular}"
+cat<<EOF
+\end{tabular}
+\caption{Caption: $1}
+\label{tab:$1}
+\end{table*}
+EOF
